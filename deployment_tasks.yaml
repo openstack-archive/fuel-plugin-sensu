@@ -1,0 +1,126 @@
+- id: fp-sensu-hiera-override
+  type: puppet
+  version: 2.0.0
+  role: ['/.*/']
+  requires: [post_deployment_start]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/hiera_override.pp"
+    puppet_modules: "/etc/puppet/modules"
+    timeout: 120
+- id: fp-sensu-rabbit-firewall
+  type: puppet
+  version: 2.0.0
+  role: ['/.*/']
+  requires: [post_deployment_start, fp-sensu-hiera-override]
+  required_for: [post_deployment_end, fp-sensu-rabbit, fp-sensu-primary-rabbit]
+  parameters:
+    puppet_manifest: "puppet/manifests/rabbitmq_firewall.pp"
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+- id: fp-sensu-rabbit
+  type: puppet
+  version: 2.0.0
+  role: ['/.*/']
+  cross-depends:
+    - name: fp-sensu-primary-rabbit
+  required_for: [post_deployment_end]
+  requires: [post_deployment_start,fp-sensu-rabbit-firewall]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 1000
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq_post.rb
+- id: fp-sensu-primary-rabbit
+  type: puppet
+  version: 2.0.0
+  role: ['/.*/']
+  required_for: [post_deployment_end]
+  requires: [post_deployment_start,fp-sensu-rabbit-firewall]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 1000
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/rabbitmq/rabbitmq_post.rb
+- id: fp-sensu-rabbit-vip
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-rabbit]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "/etc/puppet/modules/osnailyfacter/modular/virtual_ips/virtual_ips.pp"
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+- id: fp-sensu-haproxy
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-rabbit-vip]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/haproxy.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- id: fp-sensu-redis-haproxy
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-haproxy]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/redis_haproxy.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- id: fp-sensu-packages
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/packages.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 1000
+- id: fp-sensu-rabbitmq-sensu
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-haproxy,fp-sensu-packages]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/rabbitmq_sensu.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 400
+- id: fp-sensu-config-redis-sentinel
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-haproxy,fp-sensu-packages]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/redis_sentinel_config.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 400
+- id: fp-sensu-config-sensu
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-haproxy,fp-sensu-packages,fp-sensu-rabbitmq-sensu]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/sensu_config.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 400
+- id: fp-sensu-config-influxdb
+  role: ['/.*/']
+  type: puppet
+  version: 2.0.0
+  requires: [post_deployment_start,fp-sensu-haproxy,fp-sensu-packages,fp-sensu-rabbitmq-sensu,fp-sensu-config-sensu]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: "puppet/manifests/influxdb_config.pp"
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 600
