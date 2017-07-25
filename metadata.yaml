@@ -1,0 +1,20 @@
+name: fuel-plugin-sensu
+title: Sensu monitoring
+version: '0.2.6'
+description: Installs sensu, rabbitmq, redis on standalone (or LMA) hosts
+fuel_version: ['9.0','9.1']
+licenses: ['Apache License, Version 2.0']
+authors:
+  - Danila Troschinsky <troschinsky@gmail.com>
+homepage: https://github.com/sbrf-clouddev/fuel-plugin-sensu
+groups: ['monitoring']
+is_hotpluggable: true
+
+releases:
+  - os: ubuntu
+    version: mitaka-9.0
+    mode: ['ha']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+
+package_version: '4.0.0'

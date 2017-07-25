@@ -1,0 +1,14 @@
+attributes:
+  metadata:
+    label: "Sensu plugin"
+    weight: 12
+  rabbitmq_vip:
+    type: "text"
+    weight: 13
+    value: "xx.xx.xx.xx"
+    label: "rabbitmq mgmt vip"
+  redis_vip:
+    type: "text"
+    weight: 14
+    value: "xx.xx.xx.xx"
+    label: "redis vip"
