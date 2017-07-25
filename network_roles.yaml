@@ -1,0 +1,12 @@
+- id: 'rabbtimq_management_vip'
+  default_mapping: 'mgmt'
+  properties:
+    subnet: true
+    gateway: false
+    vip:
+       - name: 'vip__rabbitmq'
+         namespace: 'haproxy'
+         alias: 'vip__rabbitmq'
+         node_roles:
+           - 'influxdb_grafana'
+           - 'primary-influxdb_grafana'
