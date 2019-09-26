@@ -1,6 +1,0 @@
-port 26379
-bind <%= @mgmt %>
-sentinel monitor mymaster <%= @redis_vip %> 6379 2
-sentinel down-after-milliseconds mymaster 30000
-sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 180000

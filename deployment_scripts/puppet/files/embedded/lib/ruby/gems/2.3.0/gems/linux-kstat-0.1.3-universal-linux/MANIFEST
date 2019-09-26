@@ -1,7 +1,0 @@
-* CHANGES
-* README
-* MANIFEST
-* Rakefile
-* linux-kstat.gemspec
-* lib/linux/kstat.rb
-* test/test_linux_kstat.rb
